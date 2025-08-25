@@ -3,7 +3,8 @@
   const els = {
     patternLabel: document.getElementById('patternLabel'),
     patternType: document.getElementById('patternType'),
-    seedInput: document.getElementById('seedInput'),
+  seedInput: document.getElementById('seedInput'),
+  seedAuto: document.getElementById('seedAuto'),
     creativityInput: document.getElementById('creativityInput'),
     newBtn: document.getElementById('newBtn'),
     nextBtn: document.getElementById('nextBtn'),
@@ -66,6 +67,7 @@
     return {
       type: url.searchParams.get('pattern_type') || url.searchParams.get('type') || '',
       seed: url.searchParams.get('pattern_seed') || url.searchParams.get('seed') || '',
+      seed_auto: url.searchParams.get('pattern_seed_auto') === '1' || url.searchParams.get('seed_auto') === '1',
       creativity: parseFloat(url.searchParams.get('pattern_creativity') || url.searchParams.get('creativity') || '0') || 0,
     };
   }
@@ -74,6 +76,9 @@
     const url = new URL(window.location.href);
     if (type) url.searchParams.set('pattern_type', type); else url.searchParams.delete('pattern_type');
     if (seed) url.searchParams.set('pattern_seed', seed); else url.searchParams.delete('pattern_seed');
+    // preserve whether seed is auto-generated so reloads can re-evaluate
+    if (els.seedAuto && els.seedAuto.checked) url.searchParams.set('pattern_seed_auto', '1');
+    else url.searchParams.delete('pattern_seed_auto');
     url.searchParams.set('pattern_creativity', String(creativity ?? 0));
     history.replaceState(null, '', url);
   }
@@ -105,8 +110,16 @@
   let current = null;
 
   function newRngFromInputs() {
-    const seed = els.seedInput.value.trim();
+    // Determine seed: if user provided a seed (non-empty) use it. Otherwise,
+    // if Auto is checked, generate a new random seed for deterministic runs.
+    let seed = els.seedInput.value.trim();
     const creativity = Math.max(0, Math.min(1, parseFloat(els.creativityInput.value) || 0));
+    if (!seed && els.seedAuto && els.seedAuto.checked) {
+      // generate a 32-bit integer seed string
+      seed = String((Math.random() * 2 ** 32) >>> 0);
+      // reflect generated seed in the input so users can copy it if desired
+      els.seedInput.value = seed;
+    }
     rng = PatternRng.makeRng(seed, creativity);
     return rng;
   }
@@ -166,23 +179,80 @@
   els.patternType.value = params.type && Array.from(els.patternType.options).some(o => o.value === params.type)
     ? params.type : '';
   els.seedInput.value = params.seed || '';
+  // If the URL explicitly requests auto behavior, prefer that. Otherwise
+  // treat presence of a seed param as user-specified.
+  if (els.seedAuto) {
+    if (params.seed_auto) els.seedAuto.checked = true;
+    else els.seedAuto.checked = !Boolean(params.seed);
+  }
   els.creativityInput.value = String(params.creativity ?? 0);
+  // If seed_auto is true, we want to generate a fresh seed for this load.
+  if (params.seed_auto && els.seedAuto) {
+    // clear the input so newRngFromInputs will create a new seed and populate it
+    els.seedInput.value = '';
+  }
   newRngFromInputs();
   writeParams({ type: els.patternType.value, seed: els.seedInput.value, creativity: rng.creativity });
   loadQuestion();
 
   // Events
   els.newBtn.addEventListener('click', () => {
-    newRngFromInputs();
-    writeParams({ type: els.patternType.value, seed: els.seedInput.value, creativity: rng.creativity });
-    loadQuestion();
+  newRngFromInputs();
+  writeParams({ type: els.patternType.value, seed: els.seedInput.value, creativity: rng.creativity });
+  loadQuestion();
   });
+  // Copy link button: copy current URL (including seed and seed_auto) to clipboard
+  const shareBtn = document.getElementById('shareBtn');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      // Ensure URL params are up-to-date
+      writeParams({ type: els.patternType.value, seed: els.seedInput.value, creativity: rng.creativity });
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        // brief feedback via feedback text
+        els.feedback.textContent = 'Link copied to clipboard.';
+        els.feedback.style.color = '#333';
+      } catch (e) {
+        els.feedback.textContent = 'Could not copy link.';
+        els.feedback.style.color = 'red';
+      }
+      setTimeout(() => { els.feedback.textContent = ''; }, 2000);
+    });
+  }
   els.nextBtn.addEventListener('click', () => {
-    loadQuestion();
+  // For 'Next' we want to randomize the seed for the next question unless
+  // the user explicitly set a seed. newRngFromInputs handles generating a
+  // random seed when Auto is enabled and the input is empty.
+  newRngFromInputs();
+  writeParams({ type: els.patternType.value, seed: els.seedInput.value, creativity: rng.creativity });
+  loadQuestion();
   });
 
   for (const k of ['A','B','C','D']) {
     els.opts[k].addEventListener('click', () => handleOption(k));
+  }
+
+  // If the user types a seed, treat that as an explicit seed and turn off Auto.
+  if (els.seedInput) {
+    els.seedInput.addEventListener('input', () => {
+      const v = els.seedInput.value.trim();
+      if (els.seedAuto) {
+        if (v !== '') els.seedAuto.checked = false;
+        else els.seedAuto.checked = true;
+      }
+      // Don't recreate RNG on every keystroke; user must click New/Next.
+    });
+  }
+
+  // Allow toggling Auto manually: when Auto is checked and input empty, a new
+  // seed will be generated on New/Next. When unchecked, the input must be used.
+  if (els.seedAuto) {
+    els.seedAuto.addEventListener('change', () => {
+      // If user enables Auto and seed input empty, prefill with a generated seed
+      if (els.seedAuto.checked && (!els.seedInput.value || els.seedInput.value.trim() === '')) {
+        els.seedInput.value = String((Math.random() * 2 ** 32) >>> 0);
+      }
+    });
   }
 })();
 
