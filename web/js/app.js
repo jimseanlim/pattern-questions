@@ -110,11 +110,12 @@
   let current = null;
 
   function newRngFromInputs() {
-    // Determine seed: if user provided a seed (non-empty) use it. Otherwise,
-    // if Auto is checked, generate a new random seed for deterministic runs.
-    let seed = els.seedInput.value.trim();
+    // Determine seed: if Auto is checked, always generate a fresh seed so
+    // clicking New/Next yields a new randomized question. If Auto is not
+    // checked, respect the user's explicit seed in the input (may be empty).
     const creativity = Math.max(0, Math.min(1, parseFloat(els.creativityInput.value) || 0));
-    if (!seed && els.seedAuto && els.seedAuto.checked) {
+    let seed = '';
+    if (els.seedAuto && els.seedAuto.checked) {
       // generate a 32-bit integer seed string using crypto when available
       const _auto = (typeof crypto !== 'undefined' && crypto.getRandomValues)
         ? crypto.getRandomValues(new Uint32Array(1))[0]
@@ -122,6 +123,8 @@
       seed = String(_auto >>> 0);
       // reflect generated seed in the input so users can copy it if desired
       els.seedInput.value = seed;
+    } else {
+      seed = els.seedInput.value.trim();
     }
     rng = PatternRng.makeRng(seed, creativity);
     return rng;
