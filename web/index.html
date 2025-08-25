@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pattern Questions (Browser)</title>
+    <style>
+      :root { --size: 160px; }
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 16px; color: #222; }
+      header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+      h1 { font-size: 18px; margin: 0; }
+      .controls { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-bottom: 12px; }
+      .controls label { font-size: 13px; color: #444; }
+      .controls input[type="text"], .controls input[type="number"], .controls select { padding: 4px 6px; font-size: 14px; }
+      .btn { padding: 6px 10px; border: 1px solid #999; background: #f6f6f6; border-radius: 6px; cursor: pointer; }
+      .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      /* Stack sequence and options vertically so options sit below the question */
+      .row { display: flex; gap: 16px; align-items: stretch; flex-direction: column; }
+      .col { flex: none; }
+      .group { border: 1px solid #ddd; border-radius: 8px; padding: 12px; }
+      .group h3 { margin: 0 0 10px; font-size: 14px; color: #333; }
+      .sequence, .options { display: grid; grid-auto-flow: column; gap: 12px; }
+      .frame, .option { width: var(--size); }
+      .thumb { width: var(--size); height: var(--size); background: white; border: 1px solid #ddd; border-radius: 4px; display: grid; place-items: center; overflow: hidden; }
+      .caption { text-align: center; font-weight: bold; margin-top: 6px; color: #333; }
+      .option .caption { font-size: 14px; }
+      .sequence .caption { font-size: 20px; }
+      .feedback { text-align: center; font-weight: 600; margin-top: 8px; min-height: 1.4em; }
+      .pattern-label { text-align: center; color: #666; font-size: 12px; margin-top: 2px; }
+      .question { text-align: center; margin: 8px 0; }
+      .footer { display: grid; place-items: center; margin-top: 8px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Pattern Questions</h1>
+      <div id="patternLabel" class="pattern-label"></div>
+    </header>
+
+    <div class="controls">
+      <label>Pattern:
+        <select id="patternType"></select>
+      </label>
+      <label>Seed:
+        <input id="seedInput" type="text" placeholder="e.g. 42 or any text" />
+      </label>
+      <label>Creativity:
+        <input id="creativityInput" type="number" step="0.1" min="0" max="1" />
+      </label>
+      <button id="newBtn" class="btn">New Question</button>
+    </div>
+
+    <div id="questionText" class="question"></div>
+
+    <!-- Stacked layout: Sequence first, Options below -->
+    <div class="row">
+      <div class="col group">
+        <h3>Sequence</h3>
+        <div class="sequence">
+          <div class="frame">
+            <div class="thumb" id="frame0"></div>
+            <div class="caption" id="frameCap0"></div>
+          </div>
+          <div class="frame">
+            <div class="thumb" id="frame1"></div>
+            <div class="caption" id="frameCap1"></div>
+          </div>
+          <div class="frame">
+            <div class="thumb" id="frame2"></div>
+            <div class="caption" id="frameCap2"></div>
+          </div>
+          <div class="frame">
+            <div class="thumb" id="frame3"></div>
+            <div class="caption" id="frameCap3">?</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col group">
+        <h3>Choose the missing frame:</h3>
+        <div class="options">
+          <div class="option">
+            <button class="thumb" id="optA" aria-label="Option A"></button>
+            <div class="caption">A</div>
+          </div>
+          <div class="option">
+            <button class="thumb" id="optB" aria-label="Option B"></button>
+            <div class="caption">B</div>
+          </div>
+          <div class="option">
+            <button class="thumb" id="optC" aria-label="Option C"></button>
+            <div class="caption">C</div>
+          </div>
+          <div class="option">
+            <button class="thumb" id="optD" aria-label="Option D"></button>
+            <div class="caption">D</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="feedback" class="feedback"></div>
+    <div class="footer">
+      <button id="nextBtn" class="btn" disabled>Next Question</button>
+    </div>
+
+  <script src="js/rng_utils.js"></script>
+  <script src="js/svg_utils.js"></script>
+  <script src="patterns/polygon_tokens.js"></script>
+  <script src="patterns/spiral_creative.js"></script>
+  <script src="patterns/checkerboard.js"></script>
+  <script src="patterns/concentric_rings.js"></script>
+  <script src="patterns/hex_mosaic.js"></script>
+  <script src="patterns/kaleidoscope.js"></script>
+  <script src="patterns/lsystem_fractal.js"></script>
+  <script src="patterns/moire.js"></script>
+  <script src="patterns/octagon_fusion.js"></script>
+  <script src="patterns/pentagon_triangle.js"></script>
+  <script src="patterns/perlin_grid.js"></script>
+  <script src="patterns/pinwheel_spiral.js"></script>
+  <script src="patterns/radial_spokes.js"></script>
+  <script src="patterns/scatter_symbols.js"></script>
+  <script src="patterns/sierpinski.js"></script>
+  <script src="patterns/symbol_row.js"></script>
+  <script src="patterns/voronoi_pattern.js"></script>
+  <script src="js/local_generator.js"></script>
+  <script src="js/app.js"></script>
+  </body>
+  </html>
+
