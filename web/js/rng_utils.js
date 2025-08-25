@@ -27,7 +27,12 @@
     const seedRepr = seedStr ?? null;
     let seedInt;
     if (seedStr == null || seedStr === "") {
-      seedInt = (Math.random() * 2 ** 32) >>> 0;
+      // Use crypto.getRandomValues when available for a stronger random seed;
+      // fall back to Math.random for older environments.
+      const _auto = (typeof crypto !== 'undefined' && crypto.getRandomValues)
+        ? crypto.getRandomValues(new Uint32Array(1))[0]
+        : ((Math.random() * 2 ** 32) >>> 0);
+      seedInt = _auto >>> 0;
     } else if (/^\d+$/.test(String(seedStr))) {
       seedInt = (parseInt(seedStr, 10) >>> 0);
     } else {

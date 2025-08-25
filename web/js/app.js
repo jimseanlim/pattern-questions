@@ -115,8 +115,11 @@
     let seed = els.seedInput.value.trim();
     const creativity = Math.max(0, Math.min(1, parseFloat(els.creativityInput.value) || 0));
     if (!seed && els.seedAuto && els.seedAuto.checked) {
-      // generate a 32-bit integer seed string
-      seed = String((Math.random() * 2 ** 32) >>> 0);
+      // generate a 32-bit integer seed string using crypto when available
+      const _auto = (typeof crypto !== 'undefined' && crypto.getRandomValues)
+        ? crypto.getRandomValues(new Uint32Array(1))[0]
+        : ((Math.random() * 2 ** 32) >>> 0);
+      seed = String(_auto >>> 0);
       // reflect generated seed in the input so users can copy it if desired
       els.seedInput.value = seed;
     }
@@ -250,7 +253,10 @@
     els.seedAuto.addEventListener('change', () => {
       // If user enables Auto and seed input empty, prefill with a generated seed
       if (els.seedAuto.checked && (!els.seedInput.value || els.seedInput.value.trim() === '')) {
-        els.seedInput.value = String((Math.random() * 2 ** 32) >>> 0);
+        const _auto = (typeof crypto !== 'undefined' && crypto.getRandomValues)
+          ? crypto.getRandomValues(new Uint32Array(1))[0]
+          : ((Math.random() * 2 ** 32) >>> 0);
+        els.seedInput.value = String(_auto >>> 0);
       }
     });
   }

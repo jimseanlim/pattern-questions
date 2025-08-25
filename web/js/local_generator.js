@@ -14,9 +14,10 @@
     perlin_grid: () => global.Patterns.perlin_grid.generate,
     pinwheel_spiral: () => global.Patterns.pinwheel_spiral.generate,
     radial_spokes: () => global.Patterns.radial_spokes.generate,
+    sequence_stack: () => global.Patterns.sequence_stack.generate,
     sierpinski: () => global.Patterns.sierpinski.generate,
     symbol_row: () => global.Patterns.symbol_row.generate,
-  voronoi: () => global.Patterns.voronoi.generate,
+    voronoi: () => global.Patterns.voronoi.generate,
     scatter_symbols: () => global.Patterns.scatter_symbols.generate,
   };
 
@@ -92,6 +93,7 @@
           ["radial_spokes", 0.8],
           ["checkerboard", 0.6],
           ["sierpinski", 0.5],
+          ["sequence_stack", 0.5],
           ["scatter_symbols", 0.5],
           ["polygon_tokens", 1.0],
           ["symbol_row", 0.9],
